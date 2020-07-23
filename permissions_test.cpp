@@ -1,36 +1,44 @@
-#include "permissions_test.hpp"
-#include "eosiolib/action.hpp"
+#include <eosio/eosio.hpp>
 
-namespace eosio {
+using namespace eosio;
 
-    void permissions_test::hasauth(account_name account) {
-        eosio::print(has_auth(account));
+class [[eosio::contract]] permissions_test : public eosio::contract {
+public:
+    using contract::contract;
+
+    [[eosio::action]]
+    void hasauth(name account) {
+        print(has_auth(account));
     }
 
-    void permissions_test::reqauth(account_name account) {
+    [[eosio::action]]
+    void reqauth(name account) {
         require_auth(account);
     }
 
-    void permissions_test::reqauth2(account_name account, permission_name permission) {
-        require_auth2(account, permission);
+    [[eosio::action]]
+    void reqauth2(name account, name permission) {
+        require_auth(permission_level(account, permission));
         eosio::print(name{account});
         eosio::print('@');
         eosio::print(name{permission});
     }
 
-    void permissions_test::send(account_name sent, permission_name p_sent, account_name req) {
+    [[eosio::action]]
+    void send(name sent, name p_sent, name req) {
         action(permission_level{sent, p_sent},
-               N(test), N(reqauth),
+               "test"_n, "reqauth"_n,
                std::make_tuple(req)
         ).send();
     }
 
-    void permissions_test::send2(account_name sent, permission_name p_sent, account_name req, permission_name p_req) {
+    [[eosio::action]]
+    void send2(name sent, name p_sent, name req, name p_req) {
         action(permission_level{sent, p_sent},
-               N(test), N(reqauth2),
+               "test"_n, "reqauth2"_n,
                std::make_tuple(req, p_req)
         ).send();
     }
-}
+};
 
-EOSIO_ABI(eosio::permissions_test, (hasauth)(reqauth)(reqauth2)(send)(send2))
+// EOSIO_ABI(eosio::permissions_test, (hasauth)(reqauth)(reqauth2)(send)(send2))
